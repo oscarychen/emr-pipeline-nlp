@@ -39,6 +39,7 @@ class EmrSectionizer:
         if registry.has("misc", "getSectionHeaders"):
             return registry.get("misc", "getSectionHeaders")()
         else:
+            print("\033[91m WARNING:\033[0m building without 'getSectionHeaders' method provided via spaCy registry will result in non-function of the Sectionizer component.")
             return {}
 
     def _buildRegexPatterns(self):

@@ -44,6 +44,7 @@ class XgbBinaryClassifier:
         if registry.has("misc", "getXgbAssets"):
             return registry.get("misc", "getXgbAssets")()
         else:
+            print("\033[91m WARNING:\033[0m building without 'getXgbAssets' method provided via spaCy registry will result in non-function of the XgbBinaryClassifier component.")
             return (None, {},)
 
     def __call__(self, doc: Doc) -> Doc:

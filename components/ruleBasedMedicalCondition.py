@@ -25,6 +25,7 @@ def getSearchAsset():
     if registry.has("misc", "getRuleBasedSearchAsset"):
         return registry.get("misc", "getRuleBasedSearchAsset")()
     else:
+        print("\033[91m WARNING:\033[0m Building without 'getRuleBasedSearchAsset' method provided via spaCy registry will result in non-function of MedCondDetect component.")
         return ([{}, {}, {}], [], [])
 
 
@@ -374,7 +375,7 @@ class MedCondDetect:
             elif type(token) == dict and 'text' in token:
                 searchTerm = token['text'].__str__().lower()
             else:
-                print("WARNING: unrecognized token data type")
+                print("\033[91m WARNING:\033[0m unrecognized token data type")
                 continue
 
             if searchTerm in levelPhrases:

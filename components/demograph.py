@@ -37,6 +37,7 @@ class DemographMatcher:
         if registry.has("misc", "getDemographRules"):
             return registry.get("misc", "getDemographRules")()
         else:
+            print("\033[91m WARNING:\033[0m Building without 'getDemographRules' method provided via spaCy registry will result in non-function of DemographMatcher component.")
             return []
 
     def getConceptMap(self, conceptIds):

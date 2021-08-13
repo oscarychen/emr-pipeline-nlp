@@ -13,6 +13,7 @@ from components import postProcess
 from components import sectionizer
 from components import xgb
 
+
 modelName = 'en_core_web_sm'
 nlp = spacy.load(modelName, disable=['parser', 'ner'])
 nlp.tokenizer = customTokenizer(nlp)
