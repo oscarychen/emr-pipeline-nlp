@@ -2,8 +2,9 @@ import spacy
 from spacy.cli.package import package
 from pathlib import Path
 
-from components import helperFunctions
+import dataFunctions
 
+from components import helperFunctions
 from components.tokenizer import customTokenizer
 from components import demograph
 from components import ruleBasedMedicalCondition

@@ -1,5 +1,6 @@
 environment/
 whoosh/
+data/
 
 activate.sh
 activate.bat
