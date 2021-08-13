@@ -2,7 +2,7 @@ from spacy import registry
 from collections import defaultdict
 from pathlib import Path
 import csv
-from Utility.resources import checkCsvColumns
+from Utility.resources import *
 from joblib import load
 from operator import itemgetter
 from data.xgbModels import modelConfigs
@@ -18,6 +18,37 @@ def getSectionHeaders(path: Path = None):
         csvReader = csv.reader(file)
         headings = {row[1]: row[0] for row in csvReader}
     return headings
+
+
+@registry.misc("getDemographRules")
+def getDemographRules():
+    '''Returns a list of dictionaries each representing a demographic patterns.'''
+    path = Path("data/demographs.csv")
+    expectedColumns = ['cui', 'concept', 'category', 'label', 'phrases', 'disabled']
+
+    with open(path, mode='r', encoding='utf-8') as file:
+        csvReader = csv.reader(file)
+        headers = list(next(csvReader))
+        rowDataMapper = getFileDataMapperFunc(expectedColumns, headers, True)
+
+        for row in csvReader:
+            cui = rowDataMapper("cui", row)
+            conceptId = rowDataMapper("concept", row, convertStrToNum)
+            category = rowDataMapper("category", row)
+            label = rowDataMapper("label", row)
+            phrases = rowDataMapper("phrases", row, getSplitStringByCharFunc("|"))
+            disabled = rowDataMapper("disabled", row, convertStrToBool)
+
+            if conceptId and (disabled is not False):
+                yield {
+                    "cui": cui,
+                    "omopConceptId": conceptId,
+                    "label": label,
+                    "category": category,
+                    "phrases": phrases,
+                }
+            else:
+                continue
 
 
 @registry.misc("getXgbAssets")
@@ -71,19 +102,19 @@ def createSearchAsset():
     with open(path, mode='r',  encoding='utf-8') as file:
 
         csvReader = csv.reader(file, delimiter=',')
-        columns = list(next(csvReader))
+        headers = list(next(csvReader))
 
-        checkCsvColumns(expectedColumns, columns)
+        rowDataMapper = getFileDataMapperFunc(expectedColumns, headers, True)
 
         for row in csvReader:
 
-            type, seqId, concept_id, level_final, phrase = row
-
-            type = type.strip()
-            phrase = phrase.lower().strip()
-            level = int(level_final)
+            type = rowDataMapper("type", row)
+            seqId = rowDataMapper("seq_id", row)
+            conceptId = rowDataMapper("concept_id", row, convertStrToNum)
+            level = rowDataMapper("level", row, convertStrToNum)
+            phrase = rowDataMapper("phrases", row).lower()
             keywordPhraseSet.add(phrase)
-            conceptIdSet.add(concept_id)
+            conceptIdSet.add(conceptId)
 
             if not type in acceptedTypeValues:
                 raise TypeError(
@@ -91,7 +122,7 @@ def createSearchAsset():
                 )
 
             if level == 1:
-                seqToCond[seqId] = int(concept_id)
+                seqToCond[seqId] = conceptId
                 levelOnePhraseToSeq[phrase].append(seqId)
 
             else:

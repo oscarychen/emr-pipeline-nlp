@@ -115,6 +115,7 @@ class MedCondDetect:
         if registry.has("misc", "getConceptMap"):
             return registry.get("misc", "getConceptMap")(conceptIds)
         else:
+            print("\033[93m WARNING:\033[0m Building without 'getConceptMap' method provided via spaCy, MedCondDetect will provide concept id in place of concept label where applicable.")
             return {}
 
     def __call__(self, doc: Doc) -> Doc:
