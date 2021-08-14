@@ -1,3 +1,4 @@
+from spacy import registry
 import spacy
 from spacy.cli.package import package
 from pathlib import Path
@@ -45,6 +46,7 @@ codePaths = [
     "components/tokenizer.py",
     "components/xgb.py"
 ]
+
 packageDir = dir/"package"
 packageDir.mkdir(parents=True, exist_ok=True)
 package(

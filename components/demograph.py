@@ -6,7 +6,7 @@ from spacy.matcher import PhraseMatcher
 from operator import itemgetter
 from itertools import chain, groupby
 from spacy import registry
-from typing import Generator
+from typing import Generator, List, Union
 
 
 @Language.factory("demograph_matcher")
@@ -34,12 +34,13 @@ class DemographMatcher:
             assets = pickle.load(f)
             self.conceptMap, self.matcher = assets
 
-    def getDemographRules(self) -> Generator:
+    def getDemographRules(self) -> Union[Generator, List]:
+        print("getDemographRules")
         if registry.has("misc", "getDemographRules"):
             return registry.get("misc", "getDemographRules")()
         else:
             print("\033[91m WARNING:\033[0m Building without 'getDemographRules' method provided via spaCy registry will result in non-function of DemographMatcher component.")
-            yield from ()
+            return []
 
     def getConceptMap(self, conceptIds):
         if registry.has("misc", "getConceptMap"):

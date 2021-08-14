@@ -1,4 +1,4 @@
-from typing import Union, TypedDict
+from typing import Union, TypedDict, Dict
 from spacy.language import Language
 from spacy.tokens import Doc
 from scipy.sparse import csr_matrix
@@ -17,7 +17,7 @@ class XgbSummaryConceptItem(TypedDict):
     concept_name: str
 
 
-XgbSummary = dict[str, XgbSummaryConceptItem]
+XgbSummary = Dict[str, XgbSummaryConceptItem]
 
 
 class XgbBinaryClassifier:
