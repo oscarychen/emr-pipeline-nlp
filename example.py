@@ -1,8 +1,5 @@
 import spacy
-
-# helperFunctions contains top-level spacy functions required for some of the component
-from components import helperFunctions
-
+from en_emr_pipeline_nlp import helperFunctions
 nlp = spacy.load("en_emr_pipeline_nlp")
 
 text = '''
@@ -31,3 +28,13 @@ for i in doc._.demograph_detail:
 print("////////// doc._.xgb_summary ///////////")
 for model, result in doc._.xgb_summary.items():
     print(model, result)
+
+
+# Using function registry
+@helperFunctions.registry.misc("printHello")
+def myCustomFunction():
+    print("Hello, world!")
+
+
+f = helperFunctions.registry.get("misc", "printHello")
+f()
