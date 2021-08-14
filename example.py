@@ -3,7 +3,7 @@ from en_emr_pipeline_nlp import helperFunctions
 nlp = spacy.load("en_emr_pipeline_nlp")
 
 text = '''
-Snoopy is a 80-year old male widow. He is retired firefighter and lives alone since his wife passed away. Alex complains of massive constipation. Patient was prescribed Magnesium hydroxide 400mg/5ml suspension PO of total 30ml bid for the next 5 days. He has hypertension. Primary hypertension.
+Patient is a 80-year-old retired firefighter. Patient was diagnosed with primary hypertension.
 '''
 doc = nlp(text)
 
