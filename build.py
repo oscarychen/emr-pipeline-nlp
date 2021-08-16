@@ -46,6 +46,7 @@ codePaths = [
     "components/tokenizer.py",
     "components/xgb.py",
     "components/ruleBasedAge.py",
+    "components/helperFunctions.py"
 ]
 packageDir = dir/"package"
 packageDir.mkdir(parents=True, exist_ok=True)
