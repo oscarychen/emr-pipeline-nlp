@@ -6,7 +6,7 @@ ageAntiWordList = ['at', 'last', 'ago', 'since', 'g', 'mg', 'mcg', 'beats', 'rat
 #should move to CSV or similar
 
 @Language.factory("rule_based_age")
-def createDemographMatcher(nlp: Language, name: str):
+def createRuleBasedAge(nlp: Language, name: str):
     return ruleBasedAge(nlp)
 
 class ruleBasedAge:
@@ -15,11 +15,11 @@ class ruleBasedAge:
         self.possibleAges = []
 
     def __call__(self, doc:Doc):
-        doc.set_extension("age_debug", default=None, force=True)
+        #doc.set_extension("age_debug", default=None, force=True)
         doc.set_extension("age_detail", default=None, force=True)
         doc.set_extension("age_summary", default=None, force=True)
         self.analyze(doc)
-        doc._.age_debug = self.possibleAges
+        #doc._.age_debug = self.possibleAges
         doc._.age_detail = self.detail()
         doc._.age_summary = self.summarize()
 

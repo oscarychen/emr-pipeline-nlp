@@ -1,7 +1,8 @@
 import spacy
+from components import ruleBasedBP
 
 nlp = spacy.load("en_emr_pipeline_nlp")
-
+nlp.add_pipe('rule_based_bp')
 #nlp.remove_pipe('rule_based_age')
 #nlp.add_pipe('rule_based_age_') #renaming this pipe and adding it seperatly lets me make quick changes without rebuilding
 
@@ -9,7 +10,7 @@ nlp = spacy.load("en_emr_pipeline_nlp")
 #Snoopy is a 80-year old male widow. He is retired firefighter and lives alone since his wife passed away. Alex complains of massive constipation. Patient was prescribed Magnesium hydroxide 400mg/5ml suspension PO of total 30ml bid for the next 5 days. He has hypertension. Primary hypertension.
 #'''
 
-text = "pt is 60 years old 60. pt is 60 yo. pt is 40 yo. htn for 2 years"
+text = "pt is 60 years old with blood pressure of 140/90"
 doc = nlp(text)
 
 
@@ -46,10 +47,11 @@ for age in doc._.age_debug:
 print("////////// doc._.age_detail ///////////")
 for age in doc._.age_detail:
     print(age)
+
 print("////////// doc._.age_summary ///////////")
 for age in doc._.age_summary['age']:
     print(age)
 
-print()
-
-#print(text[doc._.age_summary['age'][0]['60']['sentences'][1]['sentBound'][0] : doc._.age_summary['age'][0]['60']['sentences'][1]['sentBound'][1]])
+print("////////// doc._.bp_debug ///////////")
+for bp in doc._.bp_debug:
+    print(bp)
