@@ -10,7 +10,7 @@ nlp.add_pipe('rule_based_bp')
 #Snoopy is a 80-year old male widow. He is retired firefighter and lives alone since his wife passed away. Alex complains of massive constipation. Patient was prescribed Magnesium hydroxide 400mg/5ml suspension PO of total 30ml bid for the next 5 days. He has hypertension. Primary hypertension.
 #'''
 
-text = "pt is 60 years old with blood pressure of 140/90"
+text = "pt is 60 years old with bp 140/90"
 doc = nlp(text)
 
 
@@ -55,3 +55,11 @@ for age in doc._.age_summary['age']:
 print("////////// doc._.bp_debug ///////////")
 for bp in doc._.bp_debug:
     print(bp)
+
+print("////////// doc._.bp_detail ///////////")
+for bp in doc._.bp_detail:
+    print(bp)
+
+print("////////// doc._.bp_summary ///////////")
+for age in doc._.bp_summary['bp']:
+    print(age)

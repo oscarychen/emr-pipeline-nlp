@@ -1,6 +1,7 @@
 from spacy.language import Language
 from spacy.tokens import Doc
 import re
+separators = ['/', 'over']
 
 @Language.factory("rule_based_bp")
 def createRuleBasedBP(nlp: Language, name: str):
@@ -17,7 +18,7 @@ class ruleBasedBP:
         doc.set_extension("bp_summary", default=None, force=True)
         self.analyze(doc)
         doc._.bp_debug = self.possibleBP
-        #doc._.bp_detail = self.detail()
+        doc._.bp_detail = self.detail()
         doc._.bp_summary = self.summarize()
 
         return doc
@@ -83,6 +84,7 @@ class ruleBasedBP:
             try:
                 if self.isBP(bpDict['nbors']['right_1']):
                     bpDict['plausibility'] += 1
+
             except KeyError:
                 pass
 
@@ -113,7 +115,7 @@ class ruleBasedBP:
                 pass
 
             try:
-                if str(bpDict['nbors']['right_1'] in ["/", "over"]):
+                if str(bpDict['nbors']['right_1'] in separators):
                     bpDict['plausibility'] += 1
                 else:
                     bpDict['plausibility'] -= 1
@@ -128,9 +130,79 @@ class ruleBasedBP:
                 bpDict['bp'] = [bpDict['text'], diastolic]
                 bpDict['plausibility'] += 1
 
-            elif str(bpDict['nbors']['left_2']) == 'bp':
+            elif str(bpDict['nbors']['left_2']) == 'bp' or str(bpDict['nbors']['left_1']) == 'bp':
                 bpDict['bp'] = [bpDict['text'], diastolic]
                 bpDict['plausibility'] += 1
+
+    def detail(self):
+        detailAgeList = []
+
+        for bpDict in self.possibleBP:
+            if bpDict['plausibility'] >= 1:
+                detailAgeList += [{'text': str(bpDict['text']),
+                                   'concept_id': 0,
+                                   'bp': bpDict['bp'],
+                                   'start': bpDict['location'][0],
+                                   'end': bpDict['location'][1],
+                                   }]
+
+        return (detailAgeList)
+
+    def summarize(self):
+        summaryBPList = {'bp': []}
+
+        likelyBP = []
+
+        for bpDict in self.possibleBP:
+            if bpDict['plausibility'] >= 1:
+                likelyBP += [bpDict]
+
+        while likelyBP:
+            # print("looping")
+            makeNewEntry = True
+
+            for summaryBP in summaryBPList['bp']:
+                # print(summaryAge)
+                if str(likelyBP[0]['bp']) in summaryBP.keys():
+                    # if there's another occurrence of the same age update its entry
+                    makeNewEntry = False
+                    madeNewSentenceEntry = True
+
+                    # print('-same age')
+                    for sentence in summaryBP[str(likelyBP[0]['age'])]['sentences']:
+                        # check every sentence the age shows up in
+                        # print('--checking ' + str(sentence))
+                        if sentence['sentBound'] == likelyBP[0]['sent_range']:
+                            # if the other occurrence is in the same sentence just add to the tokens list
+                            # print('---matched sents!')
+                            madeNewSentenceEntry = False
+                            sentence['tokens'] += [likelyBP[0]['location']]
+
+                    if madeNewSentenceEntry:
+                        # if none of the sentences matched make a new entry
+                        # print('---matched age, but not sents')
+                        summaryBPList['bp'][-1][str(likelyBP[0]['bp'])]['sentences'] += [{
+                            'sentBound': likelyBP[0]['sent_range'],
+                            'tokens': [likelyBP[0]['location']],
+                        }]
+
+                    likelyBP.remove(likelyBP[0])
+
+            if makeNewEntry:
+                # if the age isn't in the dictonary make a new entry for it
+                # print('-making new entry')
+                summaryBPList['bp'] += [{str(likelyBP[0]['bp']): {'concept_id': 0,
+                                                                       'sentences': [{
+                                                                           'sentBound':
+                                                                               likelyBP[0]['sent_range'],
+                                                                           'tokens':
+                                                                               [likelyBP[0]['location']],
+                                                                       }]
+                                                                       }}
+                                          ]
+                likelyBP.remove(likelyBP[0])
+
+        return summaryBPList
 
     def isBP(self, text):
         # checks if a spacy token might be blood pressure measurement
