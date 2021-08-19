@@ -4,7 +4,11 @@ Language model for EMR Pipeline
 
 ## Latest Model (for spaCy v3):
 
+For Mac/Linux
 https://github.com/oscarychen/emr-pipeline-nlp/releases/download/v0.0.0/en_emr_pipeline_nlp-0.0.0.tar.gz
+
+For Windows
+https://github.com/oscarychen/emr-pipeline-nlp/releases/download/v0.0.0/en_emr_pipeline_nlp-0.0.0-windows.tar.gz
 
 ## Prerequisites
 
