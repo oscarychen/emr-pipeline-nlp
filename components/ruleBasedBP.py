@@ -217,28 +217,24 @@ class ruleBasedBP:
         return summaryBPList
 
     def isBP(self, text):
-        # checks if a spacy token might be blood pressure measurement
+        # checks if a spacy token is a blood pressure
 
         cleaned_text = self.clean(text)
 
         for word in cleaned_text.split():
-            try:
-                bp = int(word)
-                if (bp > 70) and (bp < 190):
-                    return True
-            except:
-                p = re.compile('^\D*\d{1,3}\D*$')
-                agePattern = re.compile('\d{1,3}')
-                try:
-                    matchedString = p.match(word)
-                    bp = int(agePattern.findall(word)[0])
 
-                    if matchedString and (bp > 70) and (bp < 190):
-                        return True
-                    else:
-                        return False
-                except:
+            p = re.compile('^\D*\d{1,3}\D*$')
+            agePattern = re.compile('\d{1,3}')
+            try:
+                matchedString = p.match(word)
+                age = int(agePattern.findall(word)[0])
+
+                if matchedString and (age > 60) and (age < 160):
+                    return True
+                else:
                     return False
+            except:
+                return False
 
     def clean(self, text):
         text = str(text).lower()
