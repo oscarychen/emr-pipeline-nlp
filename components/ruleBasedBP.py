@@ -28,7 +28,7 @@ class ruleBasedBP:
             for word in sent:
                 if self.isBP(word):
                     self.possibleBP += [{
-                                  'bp': None,
+                                  'bp': [None, None],
                                   'plausibility': 0,
                                   'text': word,
                                   'nbors': None,
@@ -42,6 +42,7 @@ class ruleBasedBP:
         self.getNearWords()
         self.checkNearWords()
         self.checkFormat()
+        self.checkNumbers()
 
     def getNearWords(self):
         # Find, and label, all the words that are near the possible age.
@@ -101,7 +102,7 @@ class ruleBasedBP:
             try:
                 if self.isBP(bpDict['nbors']['right_1']):
                     diastolic = int(bpDict['nbors']['right_1'])
-            except KeyError:
+            except:
                 pass
 
             try:
@@ -111,7 +112,7 @@ class ruleBasedBP:
                 else:
                     bpDict['plausibility'] -= 2
 
-            except KeyError:
+            except:
                 pass
 
             try:
@@ -119,7 +120,7 @@ class ruleBasedBP:
                     bpDict['plausibility'] += 1
                 else:
                     bpDict['plausibility'] -= 1
-            except KeyError:
+            except:
                 pass
 
             if str(bpDict['nbors']['left_3']) == 'blood' and str(bpDict['nbors']['left_2']) == 'pressure':
@@ -134,19 +135,30 @@ class ruleBasedBP:
                 bpDict['bp'] = [bpDict['text'], diastolic]
                 bpDict['plausibility'] += 1
 
+            if self.isBP(bpDict['bp'][0]):
+                bpDict['bp'][0] = int(str(bpDict['bp'][0]))
+
+    def checkNumbers(self):
+        for bpDict in self.possibleBP:
+            if bpDict['bp'][0] and bpDict['bp'][1]:
+                if bpDict['bp'][0] > bpDict['bp'][1]:
+                    bpDict['plausibility'] += 1
+                else:
+                    bpDict['plausibility'] -= 3
+
     def detail(self):
-        detailAgeList = []
+        detailBPList = []
 
         for bpDict in self.possibleBP:
             if bpDict['plausibility'] >= 1:
-                detailAgeList += [{'text': str(bpDict['text']),
+                detailBPList += [{'text': str(bpDict['text']),
                                    'concept_id': 0,
                                    'bp': bpDict['bp'],
                                    'start': bpDict['location'][0],
                                    'end': bpDict['location'][1],
                                    }]
 
-        return (detailAgeList)
+        return (detailBPList)
 
     def summarize(self):
         summaryBPList = {'bp': []}
