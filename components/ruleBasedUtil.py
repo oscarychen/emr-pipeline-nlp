@@ -2,20 +2,26 @@ from spacy.language import Language
 from spacy.tokens import Doc
 import re
 
-def getNearWords(token, leftWords, rightWords):
+def getNearWords(token, lookInOtherSents, leftWords, rightWords):
     wordDict = {}
 
     for i in range(1, leftWords + 1):
         try:
-            wordDict['left_' + str(i)] = str(token.nbor(-1 * i)).lower()
+            if ((not lookInOtherSents) and (str(token.nbor(-1 * i)).lower() in str(token.sent).lower().split())) or lookInOtherSents:
+                wordDict['left_' + str(i)] = str(token.nbor(-1 * i)).lower()
+            else:
+                wordDict['left_' + str(i)] = ''
         except IndexError:
             wordDict['left_' + str(i)] = ''
 
-    for i in range (1, rightWords + 1):
+    for i in range(1, rightWords + 1):
         try:
-            wordDict["right_" + str(i)] = str(token.nbor(i)).lower()
+            if ((not lookInOtherSents) and (str(token.nbor(i)).lower() in str(token.sent).lower().split())) or lookInOtherSents:
+                wordDict['right_' + str(i)] = str(token.nbor(i)).lower()
+            else:
+                wordDict['right_' + str(i)] = ''
         except IndexError:
-            pass
+            wordDict['right_' + str(i)] = ''
 
     return wordDict
 
@@ -76,25 +82,17 @@ def isNumber(text, upperBound, lowerBound):
 
 def summarize(name, conceptID, threshold, dictList):
     summaryEntryList = {name: []}
-    print()
-    print(name)
-    #print(dictList)
     likelyEntries = []
 
     for dict in dictList:
         if dict['plausibility'] >= threshold:
             likelyEntries += [dict]
 
-    while likelyEntries:
+    while len(likelyEntries):
         makeNewEntry = True
-        print('looping')
-        print(likelyEntries)
-        print(summaryEntryList)
 
         for summaryEntry in summaryEntryList[name]:
-            print("checking summaryEntry: " + str(summaryEntry))
             if str(likelyEntries[0][name]) in summaryEntry.keys():
-                print(str(likelyEntries[0][name]) + "is in the keys")
                 # if there's another occurrence of the same age update its entry
                 makeNewEntry = False
                 makeNewSentenceEntry = True
@@ -107,10 +105,9 @@ def summarize(name, conceptID, threshold, dictList):
                         sentence['tokens'] += [likelyEntries[0]['location']]
 
                 if makeNewSentenceEntry:
-                    print('adding new sentence entry')
                     # if none of the sentences matched make a new entry
-                    print(summaryEntryList[name][-1])
-                    summaryEntryList[name][-1][str(likelyEntries[0][name])]['sentences'] += [{
+                    summaryEntryList[name][-1][str(likelyEntries[0][name])]['sentences'] += [{ 
+                        #The above throws an error sometimes. Hasn't had issues in a while and seems to be fine now?
                         'sentBound': likelyEntries[0]['sent_range'],
                         'tokens': [likelyEntries[0]['location']],
                     }]
@@ -118,8 +115,6 @@ def summarize(name, conceptID, threshold, dictList):
                 likelyEntries.remove(likelyEntries[0])
 
         if makeNewEntry:
-            print('making new entry')
-            print(likelyEntries)
             # if the age isn't in the dict make a new entry for it
             summaryEntryList[name] += [{str(likelyEntries[0][name]): {'concept_id': conceptID,
                                                                       'sentences': [{

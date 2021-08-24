@@ -1,7 +1,10 @@
 from spacy.language import Language
 from spacy.tokens import Doc
 import re
-from .ruleBasedUtil import getNearWords, clean, evaluateNearWords, isNumber, summarize, detail
+try:
+    from components import ruleBasedUtil
+except:
+    from . import ruleBasedUtil
 
 o2KeywordList = ['oxygen',
                  'o2',
@@ -18,6 +21,7 @@ o2KeywordList = ['oxygen',
                  '2lnc',
                  '2l',
                  'nc'] # '%' is not included since it causes too many false positives
+
 o2AntiWordList = []
 
 
@@ -37,20 +41,20 @@ class ruleBasedO2:
         doc.set_extension("o2_summary", default=None, force=True)
         self.analyze(doc)
         doc._.o2_debug = self.possibleO2
-        doc._.o2_detail = detail('o2', 0, 1, self.possibleO2)
-        doc._.o2_summary = summarize('o2', 0, 1, self.possibleO2)
+        doc._.o2_detail = ruleBasedUtil.detail('o2', 0, 2, self.possibleO2)
+        doc._.o2_summary = ruleBasedUtil.summarize('o2', 0, 2, self.possibleO2)
 
         return doc
 
     def analyze(self, doc: Doc):
         for sent in doc.sents:
             for word in sent:
-                if isNumber(word, 101, 30):
+                if ruleBasedUtil.isNumber(word, 101, 30):
                     self.possibleO2 += [{
                         'o2': self.extractO2(word),
                         'plausibility': 0,
                         'text': word,
-                        'nbors': getNearWords(word, 4, 4),
+                        'nbors': ruleBasedUtil.getNearWords(word, False, 4, 4),
                         #'sentWords': sent,
                         'location': [
                             word.idx,
@@ -61,7 +65,7 @@ class ruleBasedO2:
                             sent[-1].idx + len(sent[-1])],
                     }]
 
-        self.possibleO2 = evaluateNearWords(self.possibleO2, o2KeywordList, o2AntiWordList)
+        self.possibleO2 = ruleBasedUtil.evaluateNearWords(self.possibleO2, o2KeywordList, o2AntiWordList)
 
     def removeSpaces(self, text):
         out = text
@@ -71,10 +75,10 @@ class ruleBasedO2:
 
 
     def extractO2(self, text):
-        cleanText = clean(text)
+        cleanText = ruleBasedUtil.clean(text)
 
         for word in self.removeSpaces(cleanText).split():
-            if isNumber(word, 101, 30):
+            if ruleBasedUtil.isNumber(word, 101, 30):
                 try:
                     return(int(word))
                 except:

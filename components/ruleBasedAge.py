@@ -1,6 +1,9 @@
 from spacy.language import Language
 from spacy.tokens import Doc
-from .ruleBasedUtil import getNearWords, clean, removeSpaces, evaluateNearWords, isNumber, summarize, detail
+try:
+    from components import ruleBasedUtil
+except:
+    from . import ruleBasedUtil
 
 import re
 ageKeywordList = ['age', 'year', 'years', 'old', 'yo', 'patient', 'pt', 'y.o.', 'y.', 'o.', 'y/o', 'y', 'm', 'f']
@@ -22,20 +25,20 @@ class ruleBasedAge:
         doc.set_extension("age_summary", default=None, force=True)
         self.analyze(doc)
         doc._.age_debug = self.possibleAges
-        doc._.age_detail = detail('age', 0, 1, self.possibleAges)
-        doc._.age_summary = summarize('age', 0, 1, self.possibleAges)
+        doc._.age_detail = ruleBasedUtil.detail('age', 0, 1, self.possibleAges)
+        doc._.age_summary = ruleBasedUtil.summarize('age', 0, 1, self.possibleAges)
 
         return doc
 
     def analyze(self, doc:Doc):
         for sent in doc.sents:
             for word in sent:
-                if isNumber(word, 125, 2):
+                if ruleBasedUtil.isNumber(word, 125, 2):
                     self.possibleAges += [{
                                   'age': self.extractAge(word),
                                   'plausibility': 0,
                                   'text': word,
-                                  'nbors': getNearWords(word, 2, 2),
+                                  'nbors': ruleBasedUtil.getNearWords(word, True, 2, 2),
                                   'location': [
                                       word.idx,
                                       word.idx + len(str(word))],
@@ -45,7 +48,7 @@ class ruleBasedAge:
                                       sent[-1].idx + len(sent[-1])],
                                   }]
 
-        self.possibleAges = evaluateNearWords(self.possibleAges, ageKeywordList, ageAntiWordList)
+        self.possibleAges = ruleBasedUtil.evaluateNearWords(self.possibleAges, ageKeywordList, ageAntiWordList)
         self.findNearRange()
         self.checkConditions(doc)
         self.checkDecimals(doc)
@@ -121,25 +124,11 @@ class ruleBasedAge:
             else:
                 ageDict['plausibility'] += 0.5
 
-    def detail(self):
-        detailAgeList = []
-
-        for ageDict in self.possibleAges:
-            if ageDict['plausibility'] >= 1:
-                detailAgeList += [{'text': str(ageDict['text']),
-                                    'concept_id': 0,
-                                    'age': ageDict['age'],
-                                    'start': ageDict['location'][0],
-                                    'end': ageDict['location'][1],
-                                    }]
-
-        return (detailAgeList)
-
     def extractAge(self, text):
-        cleanText = clean(text)
+        cleanText = ruleBasedUtil.clean(text)
 
-        for word in removeSpaces(cleanText).split():
-            if isNumber(word, 125, 2):
+        for word in ruleBasedUtil.removeSpaces(cleanText).split():
+            if ruleBasedUtil.isNumber(word, 125, 2):
                 try:
                     return(int(word))
                 except:

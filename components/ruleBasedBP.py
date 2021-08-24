@@ -1,7 +1,10 @@
 from spacy.language import Language
 from spacy.tokens import Doc
-from .ruleBasedUtil import getNearWords, clean, isNumber, summarize, detail
-
+try:
+    from components import ruleBasedUtil
+except:
+    from . import ruleBasedUtil
+    
 separators = ["/", "over"]
 
 @Language.factory("rule_based_bp")
@@ -19,20 +22,20 @@ class ruleBasedBP:
         doc.set_extension("bp_summary", default=None, force=True)
         self.analyze(doc)
         doc._.bp_debug = self.possibleBP
-        doc._.bp_detail = detail('bp', 0, 1, self.possibleBP)
-        doc._.bp_summary = summarize('bp', 0, 1, self.possibleBP)
+        doc._.bp_detail = ruleBasedUtil.detail('bp', 0, 1, self.possibleBP)
+        doc._.bp_summary = ruleBasedUtil.summarize('bp', 0, 1, self.possibleBP)
 
         return doc
 
     def analyze(self, doc):
         for sent in doc.sents:
             for word in sent:
-                if isNumber(word, 160, 30):
+                if ruleBasedUtil.isNumber(word, 160, 30):
                     self.possibleBP += [{
                                   'bp': [None, None],
                                   'plausibility': 0,
                                   'text': word,
-                                  'nbors': getNearWords(word, 3, 2),
+                                  'nbors': ruleBasedUtil.getNearWords(word, True, 3, 2),
                                   'location': [
                                       word.idx,
                                       word.idx + len(str(word))],
@@ -47,14 +50,14 @@ class ruleBasedBP:
     def lookForPair(self):
         for bpDict in self.possibleBP:
             try:
-                if isNumber(bpDict['nbors']['right_1'], 160, 30):
+                if ruleBasedUtil.isNumber(bpDict['nbors']['right_1'], 160, 30):
                     bpDict['plausibility'] += 1
 
             except KeyError:
                 pass
 
             try:
-                if isNumber(bpDict['nbors']['right_2'], 160, 30):
+                if ruleBasedUtil.isNumber(bpDict['nbors']['right_2'], 160, 30):
                     bpDict['plausibility'] += 1
             except KeyError:
                 pass
@@ -64,14 +67,16 @@ class ruleBasedBP:
             diastolic = None
 
             try:
-                if isNumber(bpDict['nbors']['right_1'], 160, 30):
+                if ruleBasedUtil.isNumber(bpDict['nbors']['right_1'], 160, 30):
                     diastolic = int(bpDict['nbors']['right_1'])
+                    print('found diastolic: ' + str(diastolic))
             except:
                 pass
 
             try:
-                if isNumber(bpDict['nbors']['right_2'], 160, 30) and not diastolic:
+                if ruleBasedUtil.isNumber(bpDict['nbors']['right_2'], 160, 30) and not diastolic:
                     #If there are two numbers to the right it's probably not a bp
+
                     diastolic = int(bpDict['nbors']['right_2'])
                 else:
                     bpDict['plausibility'] -= 2
@@ -88,27 +93,26 @@ class ruleBasedBP:
                 pass
 
             bpDict['bp'] = [None, diastolic]
+
             if str(bpDict['nbors']['left_3']) == 'blood' and str(bpDict['nbors']['left_2']) == 'pressure':
-                bpDict['bp'][1] = bpDict['text']
+                bpDict['bp'][0] = bpDict['text']
                 bpDict['plausibility'] += 1
 
             elif str(bpDict['nbors']['left_2']) == 'blood' and str(bpDict['nbors']['left_1']) == 'pressure':
-                bpDict['bp'][1] = bpDict['text']
+                bpDict['bp'][0] = bpDict['text']
                 bpDict['plausibility'] += 1
 
             elif str(bpDict['nbors']['left_2']) == 'bp' or str(bpDict['nbors']['left_1']) == 'bp':
-                bpDict['bp'][1] = bpDict['text']
+                bpDict['bp'][0] = bpDict['text']
                 bpDict['plausibility'] += 1
 
-            if isNumber(bpDict['text'], 160, 30):
+            if ruleBasedUtil.isNumber(bpDict['text'], 160, 30):
                 bpDict['bp'][0] = int(str(bpDict['text']))
-
-
 
     def checkNumbers(self):
         for bpDict in self.possibleBP:
             if bpDict['bp'][0] and bpDict['bp'][1]:
-                if bpDict['bp'][0] > bpDict['bp'][1]:
+                if int(str(bpDict['bp'][0])) > int(str(bpDict['bp'][1])):
                     bpDict['plausibility'] += 1
                 else:
                     bpDict['plausibility'] -= 3

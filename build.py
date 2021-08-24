@@ -14,6 +14,8 @@ from components import postProcess
 from components import sectionizer
 from components import xgb
 from components import ruleBasedAge
+from components import ruleBasedO2
+from components import ruleBasedBP
 
 modelName = 'en_core_web_sm'
 nlp = spacy.load(modelName, disable=['parser', 'ner'])
@@ -33,6 +35,8 @@ nlp.add_pipe("post_process", last=True)
 nlp.add_pipe("xgb_binary_classifier", last=True)
 nlp.get_pipe("xgb_binary_classifier").build()
 nlp.add_pipe("rule_based_age", last=True)
+nlp.add_pipe("rule_based_o2", last=True)
+nlp.add_pipe("rule_based_bp", last=True)
 
 dir = Path(__file__).parent
 nlp.to_disk(dir/"build")
@@ -46,8 +50,12 @@ codePaths = [
     "components/tokenizer.py",
     "components/xgb.py",
     "components/ruleBasedAge.py",
+    "components/ruleBasedO2.py",
+    "components/ruleBasedBP.py",
+    "components/ruleBasedUtil.py",
     "components/helperFunctions.py"
 ]
+
 packageDir = dir/"package"
 packageDir.mkdir(parents=True, exist_ok=True)
 package(
