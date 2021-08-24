@@ -1,11 +1,13 @@
 from spacy.language import Language
 from spacy.tokens import Doc
+from .ruleBasedUtil import getNearWords, clean, removeSpaces, evaluateNearWords, isNumber, summarize, detail
+
 import re
 ageKeywordList = ['age', 'year', 'years', 'old', 'yo', 'patient', 'pt', 'y.o.', 'y.', 'o.', 'y/o', 'y', 'm', 'f']
 ageAntiWordList = ['at', 'last', 'ago', 'since', 'g', 'mg', 'mcg', 'beats', 'rate', 'for', 'smokes', 'history', 'ml', 'has']
 #should move to CSV or similar
 
-@Language.factory("rule_based_age")
+@Language.factory("rule_based_age_")
 def createRuleBasedAge(nlp: Language, name: str):
     return ruleBasedAge(nlp)
 
@@ -15,25 +17,25 @@ class ruleBasedAge:
         self.possibleAges = []
 
     def __call__(self, doc:Doc):
-        #doc.set_extension("age_debug", default=None, force=True)
+        doc.set_extension("age_debug", default=None, force=True)
         doc.set_extension("age_detail", default=None, force=True)
         doc.set_extension("age_summary", default=None, force=True)
         self.analyze(doc)
-        #doc._.age_debug = self.possibleAges
-        doc._.age_detail = self.detail()
-        doc._.age_summary = self.summarize()
+        doc._.age_debug = self.possibleAges
+        doc._.age_detail = detail('age', 0, 1, self.possibleAges)
+        doc._.age_summary = summarize('age', 0, 1, self.possibleAges)
 
         return doc
 
     def analyze(self, doc:Doc):
         for sent in doc.sents:
             for word in sent:
-                if self.isAge(word):
+                if isNumber(word, 125, 2):
                     self.possibleAges += [{
                                   'age': self.extractAge(word),
                                   'plausibility': 0,
                                   'text': word,
-                                  'nbors': None, #filled out by self.getNearWords()
+                                  'nbors': getNearWords(word, 2, 2),
                                   'location': [
                                       word.idx,
                                       word.idx + len(str(word))],
@@ -43,41 +45,11 @@ class ruleBasedAge:
                                       sent[-1].idx + len(sent[-1])],
                                   }]
 
-        self.getNearWords()
-        self.evaluateNearWords()
+        self.possibleAges = evaluateNearWords(self.possibleAges, ageKeywordList, ageAntiWordList)
         self.findNearRange()
         self.checkConditions(doc)
         self.checkDecimals(doc)
         self.checkRange()
-
-    def getNearWords(self):
-        # Find, and label, all the words that are near the possible age.
-        for ageDict in self.possibleAges:
-            token = ageDict['text']
-
-            wordDict = {}
-
-            try:
-                wordDict['left_far'] = token.nbor(-2)
-            except IndexError:
-                pass
-
-            try:
-                wordDict['left_near'] = token.nbor(-1)
-            except IndexError:
-                pass
-
-            try:
-                wordDict['right_near'] = token.nbor(1)
-            except IndexError:
-                pass
-
-            try:
-                wordDict['right_far'] = token.nbor(2)
-            except IndexError:
-                pass
-
-            ageDict['nbors'] = wordDict
 
     def findNearRange(self):
         #find the range of characters that covers all the words near to the possible age.
@@ -100,24 +72,6 @@ class ruleBasedAge:
 
             ageDict['near_range'][0] = leftToken.idx
             ageDict['near_range'][1] = rightToken.idx + len(str(rightToken))
-
-    def evaluateNearWords(self):
-        #Compare the list of near words to the lists of keywords and anitwords.
-        for ageDict in self.possibleAges:
-            wordList = []
-
-            for item in ageDict['nbors'].items():
-                wordList += [item[1]]
-            wordList += self.clean(ageDict['text']).split()
-
-            for word in wordList:
-                for keyword in ageKeywordList:
-                    if str(word).lower() == keyword:
-                        ageDict['plausibility'] += 1
-
-                for antiWord in ageAntiWordList:
-                    if str(word).lower() == antiWord:
-                        ageDict['plausibility'] += -1
 
     def checkConditions(self, doc):
         #Check to see if the rule based emr matcher found any conditions near the possible age. If yes there's a decent
@@ -181,98 +135,11 @@ class ruleBasedAge:
 
         return (detailAgeList)
 
-    def summarize(self):
-        summaryAgeList = {'age' : []}
-
-        likelyAges = []
-
-        for ageDict in self.possibleAges:
-            if ageDict['plausibility'] >= 1:
-                likelyAges += [ageDict]
-
-
-        while likelyAges:
-            makeNewAgeEntry = True
-
-            for summaryAge in summaryAgeList['age']:
-                if str(likelyAges[0]['age']) in summaryAge.keys():
-                    #if there's another occurrence of the same age update its entry
-                    makeNewAgeEntry = False
-                    madeNewSentenceEntry = True
-
-                    for sentence in summaryAge[str(likelyAges[0]['age'])]['sentences']:
-                        #check every sentence the age shows up in
-                        if sentence['sentBound'] == likelyAges[0]['sent_range']:
-                            #if the other occurrence is in the same sentence just add to the tokens list
-                            madeNewSentenceEntry = False
-                            sentence['tokens'] += [likelyAges[0]['location']]
-
-                    if madeNewSentenceEntry:
-                        #if none of the sentences matched make a new entry
-                        summaryAgeList['age'][-1][str(likelyAges[0]['age'])]['sentences'] += [{
-                            'sentBound': likelyAges[0]['sent_range'],
-                            'tokens': [likelyAges[0]['location']],
-                        }]
-                
-                    likelyAges.remove(likelyAges[0])
-
-            if makeNewAgeEntry:
-                #if the age isn't in the dictonary make a new entry for it
-                summaryAgeList['age'] += [{str(likelyAges[0]['age']): {'concept_id': 0,
-                                                                       'sentences': [{
-                                                                           'sentBound':
-                                                                               likelyAges[0]['sent_range'],
-                                                                           'tokens':
-                                                                               [likelyAges[0]['location']],
-                                                                           }]
-                                                                       }}
-                                          ]
-                likelyAges.remove(likelyAges[0])
-
-        return summaryAgeList
-
-    def isAge(self, text):
-        # checks if a spacy token is an age
-
-        cleaned_text = self.clean(text)
-
-        for word in cleaned_text.split():
-
-            p = re.compile('^\D*\d{1,3}\D*$')
-            agePattern = re.compile('\d{1,3}')
-            try:
-                matchedString = p.match(word)
-                age = int(agePattern.findall(word)[0])
-
-                if matchedString and (age > 0) and (age < 125):
-                    return True
-                else:
-                    return False
-            except:
-                return False
-
-    def clean(self, text):
-        text = str(text).lower()
-        out = ""
-        for char in text:
-            if char in "abcdefghijklmnopqrstuvwxyz., 0123456789":
-                out += char
-            else:
-                out += " "
-
-        return (out)
-
-    def removeSpaces(self, text):
-        out = text
-        while out.find("  ") != -1:
-            out = out.replace("  ", " ")
-        return(out)
-
     def extractAge(self, text):
-        cleanText = self.clean(text)
+        cleanText = clean(text)
 
-        for word in self.removeSpaces(cleanText).split():
-            if self.isAge(word):
+        for word in removeSpaces(cleanText).split():
+            if isNumber(word, 125, 2):
                 try:
                     return(int(word))
                 except:
