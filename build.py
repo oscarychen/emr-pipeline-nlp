@@ -77,7 +77,7 @@ def packagePipe():
         meta_path=None,
         code_paths=[dir/i for i in codePaths],
         name="emr_pipeline_nlp",
-        version="0.0.0",
+        version="0.0.1",
         create_meta=False,
         create_sdist=True,
         create_wheel=True,
