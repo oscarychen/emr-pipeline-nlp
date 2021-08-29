@@ -7,10 +7,12 @@ from spacy.tokens import Doc
 from pathlib import Path
 import pickle
 
-
-@Language.factory("emr_sectionizer")
-def createEmrSectionizer(nlp: Language, name: str):
-    return EmrSectionizer(nlp)
+try:
+    @Language.factory("emr_sectionizer")
+    def createEmrSectionizer(nlp: Language, name: str):
+        return EmrSectionizer(nlp)
+except:
+    pass
 
 
 class EmrSectionizer:

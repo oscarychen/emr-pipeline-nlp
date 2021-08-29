@@ -8,10 +8,12 @@ from itertools import chain, groupby
 from spacy import registry
 from typing import Generator, List, Union
 
-
-@Language.factory("demograph_matcher")
-def createDemographMatcher(nlp: Language, name: str):
-    return DemographMatcher(nlp)
+try:
+    @Language.factory("demograph_matcher")
+    def createDemographMatcher(nlp: Language, name: str):
+        return DemographMatcher(nlp)
+except:
+    pass
 
 
 class DemographMatcher:

@@ -1,10 +1,12 @@
 from spacy.language import Language
 from spacy.tokens import Doc
 
-
-@Language.factory("custom_sentencizer")
-def createCustomSentencizer(nlp: Language, name: str):
-    return CustomSentencizer(nlp)
+try:
+    @Language.factory("custom_sentencizer")
+    def createCustomSentencizer(nlp: Language, name: str):
+        return CustomSentencizer(nlp)
+except:
+    pass
 
 
 class CustomSentencizer:

@@ -10,15 +10,16 @@ from operator import itemgetter
 from spacy import registry
 import pickle
 
+try:
+    @Language.factory("emr_phrase_matcher")
+    def createEmrPhraseMatcher(nlp: Language, name: str):
+        return EmrPhraseMatcher(nlp)
 
-@Language.factory("emr_phrase_matcher")
-def createEmrPhraseMatcher(nlp: Language, name: str):
-    return EmrPhraseMatcher(nlp)
-
-
-@Language.factory("med_cond_detect")
-def createMedCondDetect(nlp: Language, name: str):
-    return MedCondDetect(nlp)
+    @Language.factory("med_cond_detect")
+    def createMedCondDetect(nlp: Language, name: str):
+        return MedCondDetect(nlp)
+except:
+    pass
 
 
 def getSearchAsset():

@@ -2,10 +2,12 @@ from intervaltree import IntervalTree
 from spacy.language import Language
 from spacy.tokens import Doc
 
-
-@Language.factory("post_process")
-def createEmrPostProcessor(nlp: Language, name: str):
-    return PostProcessor(nlp)
+try:
+    @Language.factory("post_process")
+    def createEmrPostProcessor(nlp: Language, name: str):
+        return PostProcessor(nlp)
+except:
+    pass
 
 
 class PostProcessor:

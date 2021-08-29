@@ -5,10 +5,12 @@ from spacy.tokens import Doc
 from spacy.matcher import Matcher
 import pickle
 
-
-@Language.factory("negation_matcher")
-def createNegationMatcher(nlp: Language, name: str):
-    return NegationMatcher(nlp)
+try:
+    @Language.factory("negation_matcher")
+    def createNegationMatcher(nlp: Language, name: str):
+        return NegationMatcher(nlp)
+except:
+    pass
 
 
 class NegationMatcher:

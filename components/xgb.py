@@ -5,10 +5,12 @@ from scipy.sparse import csr_matrix
 from spacy import registry
 import pickle
 
-
-@Language.factory("xgb_binary_classifier")
-def createXgbBinaryClassifier(nlp: Language, name: str):
-    return XgbBinaryClassifier(nlp)
+try:
+    @Language.factory("xgb_binary_classifier")
+    def createXgbBinaryClassifier(nlp: Language, name: str):
+        return XgbBinaryClassifier(nlp)
+except:
+    pass
 
 
 class XgbSummaryConceptItem(TypedDict):
