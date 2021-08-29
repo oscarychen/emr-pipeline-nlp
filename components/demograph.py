@@ -64,10 +64,10 @@ class DemographMatcher:
     def __call__(self, doc: Doc) -> Doc:
         doc.set_extension("demograph", default=None, force=True)
         doc._.demograph = self.demographicPhraseMatcher(doc)
-        doc.set_extension("demograph_detail", default=None, force=True)
-        doc._.demograph_detail = chain.from_iterable(doc._.demograph.values())
-        doc.set_extension("demograph_summary", default=None, force=True)
-        doc._.demograph_summary = self.summarize(doc._.demograph)
+        doc.set_extension("demograph_items", default=None, force=True)
+        doc._.demograph_items = chain.from_iterable(doc._.demograph.values())
+        doc.set_extension("demograph_by_sent", default=None, force=True)
+        doc._.demograph_by_sent = self.summarize(doc._.demograph)
         return doc
 
     def demographicPhraseMatcher(self, doc):

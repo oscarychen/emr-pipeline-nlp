@@ -119,10 +119,10 @@ class MedCondDetect:
             return {}
 
     def __call__(self, doc: Doc) -> Doc:
-        doc.set_extension("rule_based_emr_detail", default=None, force=True)
-        doc._.rule_based_emr_detail = self.findConditions(doc)
-        doc.set_extension("rule_based_emr_summary", default=None, force=True)
-        doc._.rule_based_emr_summary = self._conditionSummary(doc._.rule_based_emr_detail)
+        doc.set_extension("rule_based_emr_items", default=None, force=True)
+        doc._.rule_based_emr_items = self.findConditions(doc)
+        doc.set_extension("rule_based_emr_by_sent", default=None, force=True)
+        doc._.rule_based_emr_by_sent = self._conditionSummary(doc._.rule_based_emr_items)
         return doc
 
     def _conditionSummary(self, sentSpans: MatchedEntitiesBySentSpan):

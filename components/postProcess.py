@@ -15,7 +15,7 @@ class PostProcessor:
         self.sectionsIgnored = ['fam_history']
 
     def __call__(self, doc: Doc) -> Doc:
-        doc._.rule_based_emr_detail = self.emrPostProcessor(doc, getattr(doc._, "rule_based_emr_detail", {}))
+        doc._.rule_based_emr_items = self.emrPostProcessor(doc, getattr(doc._, "rule_based_emr_items", {}))
         return doc
 
     def emrPostProcessor(self, doc: Doc, results):

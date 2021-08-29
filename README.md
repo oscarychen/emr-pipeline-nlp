@@ -30,28 +30,28 @@ doc = nlp("Patient is a 80-year-old retired firefighter. Patient was diagnosed w
 
 ## Results
 
-### doc.\_.rule_based_emr_summary
+### doc.\_.rule_based_emr_by_sent
 
 ```
-for condition_label, payload in doc._.rule_based_emr_summary.items():
+for condition_label, payload in doc._.rule_based_emr_by_sent.items():
     print(f"Condition: {condition_label}, concept_id: {payload['concept_id']}, sentences: {payload['sentences']}")
 ```
 
 > Condition: 320128, concept_id: 320128, sentences: [{'sentBound': (107, 149), 'tokens': [(136, 148)]}]
 
-### doc.\_.rule_based_emr_detail
+### doc.\_.rule_based_emr_items
 
 ```
-for i in doc._.rule_based_emr_detail:
+for i in doc._.rule_based_emr_items:
     print(i)
 ```
 
 > {'start': 107, 'end': 149, 'codes': [{'tag': '320128', 'concept_id': 320128, 'triggers': 'hypertension'}]}
 
-### doc.\_.demograph_summary
+### doc.\_.demograph_by_sent
 
 ```
-for category, result in doc._.demograph_summary.items():
+for category, result in doc._.demograph_by_sent.items():
     print(f"Demographic category: {category}")
     for label, payload in result.items():
         print(f"label: {label}, concept_id: {payload['concept_id']}, sentences: {payload['sentences']}")
@@ -69,10 +69,10 @@ for category, result in doc._.demograph_summary.items():
 >
 > label: retired, concept_id: 4022069, sentences: [{'sentBound': (37, 105), 'tokens': [(43, 50)]}]
 
-### doc.\_.demograph_detail
+### doc.\_.demograph_items
 
 ```
-for i in doc._.demograph_detail:
+for i in doc._.demograph_items:
     print(i)
 ```
 

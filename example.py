@@ -7,22 +7,22 @@ Patient is a 80-year-old retired firefighter. Patient was diagnosed with primary
 '''
 doc = nlp(text)
 
-print("////////// doc._.rule_based_emr_summary ///////////")
-for condition_label, payload in doc._.rule_based_emr_summary.items():
+print("////////// doc._.rule_based_emr_by_sent ///////////")
+for condition_label, payload in doc._.rule_based_emr_by_sent.items():
     print(f"Condition: {condition_label}, concept_id: {payload['concept_id']}, sentences: {payload['sentences']}")
 
-print("////////// doc._.rule_based_emr_detail ///////////")
-for i in doc._.rule_based_emr_detail:
+print("////////// doc._.rule_based_emr_items ///////////")
+for i in doc._.rule_based_emr_items:
     print(i)
 
-print("////////// doc._.demograph_summary ///////////")
-for category, result in doc._.demograph_summary.items():
+print("////////// doc._.demograph_by_sent ///////////")
+for category, result in doc._.demograph_by_sent.items():
     print(f"Demographic category: {category}")
     for label, payload in result.items():
         print(f"label: {label}, concept_id: {payload['concept_id']}, sentences: {payload['sentences']}")
 
-print("////////// doc._.demograph_detail ///////////")
-for i in doc._.demograph_detail:
+print("////////// doc._.demograph_items ///////////")
+for i in doc._.demograph_items:
     print(i)
 
 print("////////// doc._.xgb_summary ///////////")
