@@ -15,14 +15,14 @@ from components import sectionizer
 from components import xgb
 
 
-def rmdir(directory):
-    directory = Path(directory)
-    for item in directory.iterdir():
-        if item.is_dir():
-            rmdir(item)
-        else:
-            item.unlink()
-    directory.rmdir()
+def rmdir(directory: Path):
+    if directory.is_dir():
+        for item in directory.iterdir():
+            if item.is_dir():
+                rmdir(item)
+            else:
+                item.unlink()
+        directory.rmdir()
 
 
 def makePipe():
