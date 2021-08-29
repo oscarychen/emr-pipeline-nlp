@@ -8,7 +8,7 @@ For Mac/Linux
 https://github.com/oscarychen/emr-pipeline-nlp/releases/download/v0.0.1/en_emr_pipeline_nlp-0.0.1.tar.gz
 
 For Windows
-N/A
+https://github.com/oscarychen/emr-pipeline-nlp/releases/download/v0.0.1/en_emr_pipeline_nlp-0.0.1_windows.tar.gz
 
 ## Prerequisites
 
@@ -30,65 +30,27 @@ doc = nlp("Patient is a 80-year-old retired firefighter. Patient was diagnosed w
 
 ## Results
 
-### doc.\_.rule_based_emr_by_sent
-
-```
-for condition_label, payload in doc._.rule_based_emr_by_sent.items():
-    print(f"Condition: {condition_label}, concept_id: {payload['concept_id']}, sentences: {payload['sentences']}")
-```
-
-> Condition: 320128, concept_id: 320128, sentences: [{'sentBound': (107, 149), 'tokens': [(136, 148)]}]
-
-### doc.\_.rule_based_emr_items
+### Rule-based EMR conditions
 
 ```
 for i in doc._.rule_based_emr_items:
     print(i)
 ```
 
-> {'start': 107, 'end': 149, 'codes': [{'tag': '320128', 'concept_id': 320128, 'triggers': 'hypertension'}]}
+> {'start': 46, 'end': 94, 'codes': [{'tag': '320128', 'concept_id': 320128, 'triggers': 'hypertension'}]}
 
-### doc.\_.demograph_by_sent
-
-```
-for category, result in doc._.demograph_by_sent.items():
-    print(f"Demographic category: {category}")
-    for label, payload in result.items():
-        print(f"label: {label}, concept_id: {payload['concept_id']}, sentences: {payload['sentences']}")
-```
-
-> Demographic category: gender
->
-> label: male, concept_id: 442985, sentences: [{'sentBound': (0, 35), 'tokens': [(25, 29)]}, {'sentBound': (37, 105), 'tokens': [(37, 39), (85, 88)]}, {'sentBound': (107, 148), 'tokens': [(107, 109)]}]
-
-> Demographic category: civil
->
-> label: widowed, concept_id: 4149091, sentences: [{'sentBound': (0, 35), 'tokens': [(30, 35)]}]
-
-> Demographic category: employment
->
-> label: retired, concept_id: 4022069, sentences: [{'sentBound': (37, 105), 'tokens': [(43, 50)]}]
-
-### doc.\_.demograph_items
+### Rule-based demographic attributes
 
 ```
 for i in doc._.demograph_items:
     print(i)
 ```
 
-> {'text': 'male', 'concept_id': 442985, 'type': 'gender', 'label': 'male', 'start': 25, 'end': 29}
+> {'text': 'retired', 'concept_id': 4022069, 'type': 'employment', 'label': 'retired', 'start': 25, 'end': 32}
 
-> {'text': 'widow', 'concept_id': 4149091, 'type': 'civil', 'label': 'widowed', 'start': 30, 'end': 35}
+> {'text': 'firefighter', 'concept_id': 4024315, 'type': 'occupation', 'label': 'Fire fighter', 'start': 33, 'end': 44}
 
-> {'text': 'He', 'concept_id': 442985, 'type': 'gender', 'label': 'male', 'start': 37, 'end': 39}
-
-> {'text': 'retired', 'concept_id': 4022069, 'type': 'employment', 'label': 'retired', 'start': 43, 'end': 50}
-
-> {'text': 'his', 'concept_id': 442985, 'type': 'gender', 'label': 'male', 'start': 85, 'end': 88}
-
-> {'text': 'He', 'concept_id': 442985, 'type': 'gender', 'label': 'male', 'start': 107, 'end': 109}
-
-### doc.\_.xgb_summary
+### XGB models for detecting 6 medical conditions
 
 ```
 for model, result in doc._.xgb_summary.items():
@@ -106,3 +68,29 @@ for model, result in doc._.xgb_summary.items():
 > xgb_3000_obesity {'output': 0, 'concept_id': 433736, 'concept_name': '433736'}
 
 > xgb_3000_peptic_ulcer {'output': 0, 'concept_id': 4027663, 'concept_name': '4027663'}
+
+## Results by sentence spans
+
+### EMR conditions
+
+```
+for condition_label, payload in doc._.rule_based_emr_by_sent.items():
+    print(f"Condition: {condition_label}, concept_id: {payload['concept_id']}, sentences: {payload['sentences']}")
+```
+
+> Condition: 320128, concept_id: 320128, sentences: [{'sentBound': (46, 94), 'tokens': [(81, 93)]}]
+
+### Demographic attributes
+
+```
+for category, result in doc._.demograph_by_sent.items():
+    print(f"Demographic category: {category}")
+    for label, payload in result.items():
+        print(f"label: {label}, concept_id: {payload['concept_id']}, sentences: {payload['sentences']}")
+```
+
+> Demographic category: employment
+> label: retired, concept_id: 4022069, sentences: [{'sentBound': (0, 44), 'tokens': [(25, 32)]}]
+
+> Demographic category: occupation
+> label: Fire fighter, concept_id: 4024315, sentences: [{'sentBound': (0, 44), 'tokens': [(33, 44)]}]
