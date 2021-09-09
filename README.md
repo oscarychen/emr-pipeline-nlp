@@ -2,19 +2,9 @@
 
 Language model for EMR Pipeline
 
-## Latest Model (for spaCy v3):
+## Download Latest Model (for spaCy v3):
 
-For Mac/Linux
-https://github.com/oscarychen/emr-pipeline-nlp/releases/download/v0.0.1/en_emr_pipeline_nlp-0.0.1.tar.gz
-
-For Windows
-https://github.com/oscarychen/emr-pipeline-nlp/releases/download/v0.0.1/en_emr_pipeline_nlp-0.0.1_windows.tar.gz
-
-## Prerequisites
-
-- intervaltree==3.1.0
-- scikit-learn==0.24.1
-- xgboost==1.4.2
+https://github.com/oscarychen/emr-pipeline-nlp/releases/latest/
 
 ## Install
 
@@ -25,7 +15,10 @@ https://github.com/oscarychen/emr-pipeline-nlp/releases/download/v0.0.1/en_emr_p
 ```
 import spacy
 nlp = spacy.load("en_emr_pipeline_nlp")
-doc = nlp("Patient is a 80-year-old retired firefighter. Patient was diagnosed with primary hypertension.")
+text = '''
+Patient is a 80-year-old retired firefighter. Patient was diagnosed with primary hypertension.
+'''
+doc = nlp(text)
 ```
 
 ## Results
@@ -37,7 +30,7 @@ for i in doc._.rule_based_emr_items:
     print(i)
 ```
 
-> {'start': 46, 'end': 94, 'codes': [{'tag': '320128', 'concept_id': 320128, 'triggers': 'hypertension'}]}
+> {'start': 47, 'end': 95, 'codes': [{'tag': '320128', 'concept_id': 320128, 'triggers': 'hypertension'}]}
 
 ### Rule-based demographic attributes
 
@@ -46,9 +39,9 @@ for i in doc._.demograph_items:
     print(i)
 ```
 
-> {'text': 'retired', 'concept_id': 4022069, 'type': 'employment', 'label': 'retired', 'start': 25, 'end': 32}
+> {'text': 'retired', 'concept_id': 4022069, 'type': 'employment', 'label': 'retired', 'start': 26, 'end': 33}
 
-> {'text': 'firefighter', 'concept_id': 4024315, 'type': 'occupation', 'label': 'Fire fighter', 'start': 33, 'end': 44}
+> {'text': 'firefighter', 'concept_id': 4024315, 'type': 'occupation', 'label': 'Fire fighter', 'start': 34, 'end': 45}
 
 ### XGB models for detecting 6 medical conditions
 
@@ -78,7 +71,7 @@ for condition_label, payload in doc._.rule_based_emr_by_sent.items():
     print(f"Condition: {condition_label}, concept_id: {payload['concept_id']}, sentences: {payload['sentences']}")
 ```
 
-> Condition: 320128, concept_id: 320128, sentences: [{'sentBound': (46, 94), 'tokens': [(81, 93)]}]
+> Condition: 320128, concept_id: 320128, sentences: [{'sentBound': (47, 95), 'tokens': [(82, 94)]}]
 
 ### Demographic attributes
 
@@ -90,7 +83,26 @@ for category, result in doc._.demograph_by_sent.items():
 ```
 
 > Demographic category: employment
-> label: retired, concept_id: 4022069, sentences: [{'sentBound': (0, 44), 'tokens': [(25, 32)]}]
+> label: retired, concept_id: 4022069, sentences: [{'sentBound': (0, 45), 'tokens': [(26, 33)]}]
 
 > Demographic category: occupation
-> label: Fire fighter, concept_id: 4024315, sentences: [{'sentBound': (0, 44), 'tokens': [(33, 44)]}]
+> label: Fire fighter, concept_id: 4024315, sentences: [{'sentBound': (0, 45), 'tokens': [(34, 45)]}]
+
+## Customization using spaCy registry function
+
+### Map concept id to concept name/label in output
+
+You can make the language model output name for each concept besides the concept Id. To do so, you must provide a function that takes a list of concept ids and return a dictionary which maps each concept id to a name. This function must be registered with spaCy before loading the language model, ie:
+
+```
+@spacy.util.registry.misc("getConceptMap")
+def customConceptMappingFunction(conceptIds: List[int]):
+    return {
+        320128: "Essential hypertension",
+        4024315: "Fireman"
+    }
+
+nlp = spacy.load("en_emr_pipeline_nlp")
+```
+
+Using this mechanism, you can write custom function that queries a database or API.

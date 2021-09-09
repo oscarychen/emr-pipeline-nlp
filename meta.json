@@ -1,0 +1,11 @@
+{
+  "lang": "en",
+  "name": "emr_pipeline_nlp",
+  "version": "0.0.2",
+  "description": "Centre for Health Informatics, University of Calgary Electronic Medical Records free text processing pipeline.",
+  "author": "Oscar Chen",
+  "email": "chi@ucalgary.ca",
+  "url": "https://www.chi-csm.ca",
+  "license": "GPL",
+  "requirements": ["intervaltree==3.1.0", "scikit-learn==0.24.1", "xgboost==1.4.2"]
+}

@@ -48,7 +48,7 @@ class DemographMatcher:
         if registry.has("misc", "getConceptMap"):
             return registry.get("misc", "getConceptMap")(conceptIds)
         else:
-            print("\033[93m WARNING:\033[0m Building without 'getConceptMap' method provided via spaCy, DemographMatcher will provide concept id in place of concept label where applicable.")
+            print("\033[93m WARNING:\033[0m Running without 'getConceptMap' method provided via spaCy, DemographMatcher will provide concept id in place of concept label where applicable.")
             return {}
 
     def build(self):
@@ -75,11 +75,14 @@ class DemographMatcher:
     def demographicPhraseMatcher(self, doc):
         outputMatches = defaultdict(list)
         spans = [(match_id, doc[start:end]) for match_id, start, end in self.matcher(doc)]
+        conceptIds = map(lambda i: int(doc.vocab.strings[i[0]]), spans)
+        self.runtimeConceptMap = self.getConceptMap(conceptIds)
+
         for match_id, span in spans:
             conceptId = int(doc.vocab.strings[match_id])
             conceptDict = self.conceptMap[conceptId]
             cat = conceptDict['category']
-            label = conceptDict['concept_name']
+            label = self.runtimeConceptMap.get(conceptId) or conceptDict['concept_name']
             start_token = doc[span.start]
             end_token = doc[span.end-1]
             start_char = start_token.idx
@@ -111,7 +114,7 @@ class DemographMatcher:
         summary = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         for category, labelDictionary in categoryDictionary.items():
             for conceptId, tokens in labelDictionary.items():
-                conceptName = self.conceptMap[conceptId]['concept_name']
+                conceptName = self.runtimeConceptMap.get(conceptId) or self.conceptMap[conceptId]['concept_name']
                 sortedTokens = sorted(tokens, key=itemgetter('sentBound'))
                 for sentBound, group in groupby(sortedTokens, itemgetter('sentBound')):
 

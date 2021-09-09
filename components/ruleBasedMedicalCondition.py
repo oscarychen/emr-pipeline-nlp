@@ -94,6 +94,8 @@ class MedCondDetect:
     def __init__(self, nlp: Language):
         self.searchAsset = [{}, {}, {}]
         self.conceptMap = {}
+        self.conceptIds = []
+        self.runtimeConceptMap = {}
         self.flattenDictionary = registry.get("misc", "flattenDictionary")
 
     def to_disk(self, path, exclude=tuple()):
@@ -107,16 +109,17 @@ class MedCondDetect:
         with open(dataPath, 'rb') as f:
             assets = pickle.load(f)
             self.searchAsset, self.conceptMap = assets
+        self.runtimeConceptMap = self.getConceptMap(self.conceptIds)
 
     def build(self):
-        self.searchAsset, _, conceptIds = getSearchAsset()
-        self.conceptMap = self.getConceptMap(conceptIds)
+        self.searchAsset, _, self.conceptIds = getSearchAsset()
+        self.conceptMap = self.getConceptMap(self.conceptIds)
 
     def getConceptMap(self, conceptIds):
         if registry.has("misc", "getConceptMap"):
             return registry.get("misc", "getConceptMap")(conceptIds)
         else:
-            print("\033[93m WARNING:\033[0m Building without 'getConceptMap' method provided via spaCy, MedCondDetect will provide concept id in place of concept label where applicable.")
+            print("\033[93m WARNING:\033[0m Running without 'getConceptMap' method provided via spaCy, MedCondDetect will provide concept id in place of concept label where applicable.")
             return {}
 
     def __call__(self, doc: Doc) -> Doc:
@@ -260,7 +263,7 @@ class MedCondDetect:
                     annot = {
                         "start": annotation['start'],
                         "end": annotation['end'],
-                        "tag": self.conceptMap.get(conceptId) or str(conceptId),
+                        "tag": self.runtimeConceptMap.get(conceptId) or self.conceptMap.get(conceptId) or str(conceptId),
                         "concept_id": conceptId
                     }
 
