@@ -67,3 +67,13 @@ for i in doc._.demograph_items:
 print("////////// doc._.xgb_summary ///////////")
 for model, result in doc._.xgb_summary.items():
     print(model, result)
+
+# batch processing
+print("////////// batch processing ////////////")
+docs = nlp.pipe(["i have hypetension", "she has had hypertension", "he has hypertension"])
+for i, doc in enumerate(docs):
+    print(f">>>>> Doc {i}")
+    print(doc._.rule_based_emr_by_sent)
+    print(doc._.rule_based_emr_items)
+    print(doc._.demograph_by_sent)
+    print(doc._.xgb_summary)
